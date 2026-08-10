@@ -1,0 +1,22 @@
+{% extends 'base.html' %} 
+
+{% block title %}OTP verification{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/verify.css') }}">
+{% endblock %}
+
+
+{%block content %}
+    <p>OTP verification</p>
+
+    {{info}}
+    
+    <form action="/verify" method="POST">
+
+        <label for="otp">Enter the otp: </label>
+        <input type="text" name="otp">
+
+        <input type="submit" value="verify">
+    </form>
+{% endblock %}

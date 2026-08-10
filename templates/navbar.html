@@ -1,0 +1,14 @@
+<nav class="navbar">
+    <div>
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    </div>
+    <div>
+        {% if session.get('Verified Login') %}
+            <span>Welcome, {{ session['uname'] }}</span>
+            <a href="{{ url_for('logout') }}">Logout</a>
+        {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('register') }}">Register</a>
+        {% endif %}
+    </div>
+</nav>
