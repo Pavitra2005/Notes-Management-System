@@ -1,31 +1,19 @@
 from flask import Flask, redirect, render_template, request, session, url_for
 import random
-from flask_mail import Mail, Message
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired
 import bcrypt
 from database import db  
+from mail import send_email
 
 app = Flask(__name__)
 
 app.secret_key = "notes@22"
+
 s = URLSafeTimedSerializer(app.secret_key)
 
 
 
-# =========================================================
-# MAIL CONFIGURATION
-# =========================================================
 
-app.config["MAIL_SERVER"] = "smtp.gmail.com"
-app.config["MAIL_PORT"] = 587
-app.config["MAIL_USE_TLS"] = True
-app.config["MAIL_USE_SSL"] = False
-app.config['MAIL_USERNAME'] = 'upavitra2005@gmail.com'
-app.config['MAIL_PASSWORD'] = 'xhvr quwi ycux oqxq'
-app.config['MAIL_DEFAULT_SENDER'] = 'upavitra2005@gmail.com'
-
-
-mail = Mail(app)
 
 
 # =========================================================
@@ -35,21 +23,6 @@ mail = Mail(app)
 def generate_otp():
     return str(random.randint(100000,999999))
 
-def send_otp_email(name,email,otp):
-    try:
-        msg=Message("OTP VERIFICATION", recipients=[email])
-        msg.body=f"""
-        Hello {name}, 
-        Your OTP is: {otp}
-        Thank You.
-        """
-
-        mail.send(msg)
-        return True
-    
-    except Exception as e:
-        print(e)
-        return False
 
 
 # =========================================================
@@ -78,7 +51,7 @@ def login():
             session["uname"]=user[1]
             session["user_id"]=user[0]
             session["otp"]=generate_otp()
-            if send_otp_email(session["uname"],email,session["otp"]):
+            if send_email(email,'OTP Verification',f"Hello {session['uname']}, your OTP:{session['otp']}"):
                 return redirect("verify")
             else:
               return render_template("login.html",info="Unable to send the otp")
@@ -140,53 +113,22 @@ def verify():
 #Forgot Password
 #=====================
 
-@app.route("/forgotpassword" , methods=["GET","POST"])
+@app.route("/forgotpassword",methods=["GET","POST"])
 def forgotpassword():
-
     if request.method=="POST":
-
         email=request.form.get("email")
-
-
+        cursor=db.cursor()
+        cursor.execute("SELECT username FROM users WHERE email=%s",(email,))
+        user=cursor.fetchone()
         if user:
-
-            session["email"]=email
-
-            token=s.dumps(email, salt="password-reset-salt")
-
-            reset_url=url_for(
-                "resetpassword",
-                token=token,
-                _external=True
-            )
-
-            try:
-                msg=Message(
-                    "password Reset Request",
-                    recipients=[email]
-                )
-
-                msg.body=f"""
-Hello {user['username']},
-Click the link below to reset your password
-{reset_url}
-This link will expire in 1 hour.
-"""
-
-                mail.send(msg)
-
-            except Exception as e:
-                print(e)
-                return render_template(
-                    "forgotpassword.html",
-                    info="Unable to send the email."
-                )
-        return render_template(
-            "forgotpassword.html",
-            info="Email is not registered"
-        )
-
+            session['email']=email
+            token=s.dumps(email, salt='password-reset-salt')
+            reset_url=url_for('resetpassword',token=token, _external=True)
+            send_email(email,'Password Reset Request',f'Click the link to reset your password:{reset_url}\n\nthis link will expire in 1 hour')
+            return render_template("forgotpassword.html",info=" link sent  to your email,please check")
+        return render_template("forgotpassword.html",info="Email is not registered")
     return render_template("forgotpassword.html")
+
 
 #========================
 #Reset Password
@@ -203,35 +145,22 @@ def resetpassword(token):
 
 
     if request.method=="POST":
-
         newpassword=request.form.get("newpassword")
         confirmpassword=request.form.get("confirmpassword")
+        if newpassword==confirmpassword:
+                email=session.get('email')
+                hashed_password=bcrypt.hashpw(newpassword.encode("utf-8"),bcrypt.gensalt()).decode("utf-8")
 
-        if newpassword!=confirmpassword:
+                if email:
+                    cursor=db.cursor()
+                    cursor.execute("UPDATE users SET password=%s WHERE email=%s",(hashed_password,email))
+                    db.commit()
+                    session.pop('email',None)
+                    return redirect(url_for("login"))
+        else:           
+            return render_template("resetpassword.html", info="Passwords do not match")
+    return render_template('resetpassword.html')
 
-            return render_template(
-                "resetpassword.html",
-                info="password do not match"
-            )
-
-
-        for user in data["users"]:
-
-            if user["email"]==email:
-
-                hashed_password=bcrypt.hashpw(
-                    newpassword.encode("utf-8"),
-                    bcrypt.gensalt()
-                ).decode("utf-8")
-
-                user["password"]=hashed_password
-
-
-                session.pop("email",None)
-
-                return redirect(url_for("login"))
-            
-    return render_template("resetpassword.html")
 
 #===================
 #Dashboard
@@ -239,9 +168,57 @@ def resetpassword(token):
 
 @app.route("/dashboard")
 def dashboard():
-    return redirect("/login")
+    if 'Verified Login' in session and 'user_id' in session:
+        user_id=session['user_id']
+        cursor=db.cursor(dictionary=True)
+        cursor.execute("select * from notes where user_id=%s order by created_at desc",(user_id,))
+        notes=cursor.fetchall()
+        cursor.close()
+        return render_template('dashboard.html',username=session['uname'],notes=notes)
+    return redirect(url_for('login'))
 
+@app.route('/createnote',methods=['POST'])
+def create_note():
+    if 'user_id' in session:
+        content=request.form.get('content')
+        user_id=session['user_id']
+        cursor=db.cursor()
+        cursor.execute("INSERT INTO notes(user_id,content) VALUES (%s,%s)", (user_id,content))
+        db.commit()
+        return redirect(url_for('dashboard'))
+    return redirect(url_for('login'))
+
+
+@app.route('/deletenote/<int:note_id>')
+def delete_note(note_id):
+    if 'user_id' in session:
+        cursor=db.cursor()
+        cursor.execute("DELETE FROM notes WHERE id=%s AND user_id=%s",(note_id, session['user_id']))
+        db.commit()
+    return redirect(url_for('dashboard'))
+
+@app.route('/editnote/<int:note_id>',methods=['GET','POST'])
+def edit_note(note_id):
+    if 'user_id' not in session:
+        return redirect(url_for('login'))
+    cursor=db.cursor(dictionary=True)
+    if request.method=='POST':
+        new_content=request.form.get('content')
+        cursor.execute("UPDATE notes SET content=%s WHERE id=%s AND user_id=%s", (new_content,note_id,session['user_id']))
+        db.commit()
+        return redirect(url_for('dashboard'))
+    else:
+        cursor.execute("SELECT * FROM notes WHERE id=%s AND user_id=%s",(note_id,session['user_id']))
+        note=cursor.fetchone()
+        cursor.close()
+        if note:
+            return render_template('editnote.html',note=note)
+    return redirect(url_for('dashboard'))
+
+
+#================
 #Logout
+#================
 
 @app.route('/logout')
 def logout():

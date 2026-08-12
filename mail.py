@@ -8,13 +8,13 @@ SENDER_EMAIL = "upavitra2005@gmail.com"
 SENDER_PASSWORD = "xhvr quwi ycux oqxq"  
 
 
-def send_email(to_email,username,otp):
+def send_email(to_email,subject,body):
     try:
         msg = MIMEMultipart()
         msg["From"] = SENDER_EMAIL
         msg["To"] = to_email
-        msg["Subject"] = 'OTP Verification'
-        body = f'Hello {username}, Your OTP: {otp}'
+        msg["Subject"] = subject
+        body = body
         msg.attach(MIMEText(body, "plain")) 
 
 
@@ -25,8 +25,10 @@ def send_email(to_email,username,otp):
         server.quit()
 
         print(f"Email sent to {to_email}")
+        return True
 
     except Exception as e:
         print(f"Error sending email to {to_email}: {e}")
+        return False
 
 
