@@ -1,60 +1,106 @@
+/* =========================
+   EDIT NOTE
+   ========================= */
+
 .edit-note-container {
-    max-width: 600px;
-    margin: 3rem auto;
-    padding: 2rem;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 0 15px rgba(0,0,0,0.1);
-  }
-  
-  .edit-note-container h2 {
+    width: min(650px, 94%);
+    margin: clamp(2rem, 6vw, 4rem) auto;
+    padding: clamp(1.4rem, 4vw, 2.5rem);
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+}
+
+.edit-note-container h2 {
     text-align: center;
-    color: #004080;
-    margin-bottom: 1.5rem;
-  }
-  
-  .edit-note-container textarea {
-    width: 93%;
-    min-height: 200px;
+    color: var(--secondary);
+    margin: 0 0 1.6rem;
+    font-size: clamp(1.5rem, 4vw, 2rem);
+}
+
+.edit-note-container h2::after {
+    content: "";
+    display: block;
+    width: 45px;
+    height: 4px;
+    margin: 10px auto 0;
+    border-radius: 10px;
+    background: var(--primary);
+}
+
+.edit-note-container textarea {
+    width: 100%;
+    min-height: 240px;
     resize: vertical;
-    padding: 1rem;
+    padding: 1.1rem;
     font-size: 1rem;
-    border: 1px solid #ccc;
-    border-radius: 8px;
-  }
-  
-  .actions {
-    margin-top: 1rem;
+    line-height: 1.6;
+    color: var(--text);
+    background: #f8fafc;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    outline: none;
+    transition: 0.25s ease;
+}
+
+.edit-note-container textarea:focus {
+    background: white;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.actions {
+    margin-top: 1.2rem;
     display: flex;
-    justify-content: space-between;
-  }
-  
-  .save-btn,
-  .cancel-btn {
-    padding: 0.6rem 1.2rem;
-    font-size: 1rem;
+    justify-content: flex-end;
+    gap: 0.8rem;
+}
+
+.save-btn,
+.cancel-btn {
+    min-width: 110px;
+    padding: 0.7rem 1.2rem;
+    font-size: 0.95rem;
+    font-weight: 700;
     border: none;
-    border-radius: 6px;
+    border-radius: 11px;
     text-decoration: none;
     color: white;
-    transition: background 0.3s ease;
-  }
-  
-  .save-btn {
-    background-color: #007bff;
-  }
-  
-  .save-btn:hover {
-    background-color: #0056b3;
-  }
-  
-  .cancel-btn {
-    background-color: #6c757d;
-    display: inline-block;
     text-align: center;
-  }
-  
-  .cancel-btn:hover {
-    background-color: #5a6268;
-  }
-  
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+.save-btn {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    box-shadow: 0 7px 18px rgba(37, 99, 235, 0.22);
+}
+
+.cancel-btn {
+    background: #64748b;
+}
+
+.save-btn:hover,
+.cancel-btn:hover {
+    transform: translateY(-2px);
+}
+
+.save-btn:hover {
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.3);
+}
+
+.cancel-btn:hover {
+    background: #475569;
+}
+
+@media (max-width: 500px) {
+    .actions {
+        flex-direction: column;
+    }
+
+    .save-btn,
+    .cancel-btn {
+        width: 100%;
+    }
+}

@@ -1,61 +1,99 @@
+/* =========================
+   LOGIN
+   ========================= */
+
 .form-container {
-    max-width: 400px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background-color: #f8f8f8;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  }
-  
-  .form-container h2 {
+    width: min(430px, 92%);
+    margin: clamp(2rem, 8vh, 5rem) auto;
+    padding: clamp(1.5rem, 5vw, 2.5rem);
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(8px);
+}
+
+.form-container h2 {
     text-align: center;
-    margin-bottom: 1rem;
-    color: #004080;
-  }
-  
-  input[type="email"],
-  input[type="password"] {
+    margin: 0 0 1.6rem;
+    color: var(--secondary);
+    font-size: 1.8rem;
+}
+
+.form-container h2::after {
+    content: "";
+    display: block;
+    width: 45px;
+    height: 4px;
+    margin: 10px auto 0;
+    border-radius: 10px;
+    background: linear-gradient(90deg, var(--primary), #60a5fa);
+}
+
+input[type="email"],
+input[type="password"] {
     width: 100%;
-    padding: 10px;
-    margin: 0.6rem 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  
-  button {
+    padding: 0.85rem 1rem;
+    margin: 0.55rem 0;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: #f8fafc;
+    color: var(--text);
+    outline: none;
+    transition: 0.25s ease;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus {
+    background: white;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.11);
+}
+
+button {
     width: 100%;
-    padding: 10px;
-    background-color: #004080;
+    margin-top: 0.8rem;
+    padding: 0.85rem 1rem;
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
     color: white;
     border: none;
-    border-radius: 5px;
+    border-radius: 11px;
     cursor: pointer;
-    font-weight: bold;
-  }
-  
-  button:hover {
-    background-color: #003060;
-  }
-  
-  .form-links {
-    margin-top: 1rem;
+    font-weight: 700;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.22);
+    transition: 0.25s ease;
+}
+
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(37, 99, 235, 0.3);
+}
+
+.form-links {
+    margin-top: 1.2rem;
     text-align: center;
-    font-size: 0.95rem;
-  }
-  
-  .form-links a {
-    color: #004080;
+    font-size: 0.92rem;
+    color: var(--muted);
+}
+
+.form-links a {
+    color: var(--primary);
     text-decoration: none;
-    font-weight: bold;
-  }
-  
-  .form-links a:hover {
+    font-weight: 700;
+}
+
+.form-links a:hover {
+    color: var(--primary-dark);
     text-decoration: underline;
-  }
-  
-  .error {
-    color: red;
+}
+
+.error {
+    color: #b91c1c;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    padding: 0.7rem;
+    border-radius: 10px;
     text-align: center;
     margin-bottom: 1rem;
-  }
-  
+    font-size: 0.9rem;
+}
